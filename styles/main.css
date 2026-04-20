@@ -1,28 +1,25 @@
 :root {
   --bg-deep: #07142d;
   --bg-mid: #0b2551;
-  --bg-bright: #123f85;
   --bg-soft: #eef4ff;
 
   --text-main: #0d2346;
   --text-sub: #355178;
   --text-on-dark: #eef6ff;
 
-  --primary: #2377f3;
-  --primary-strong: #3f9cff;
-  --accent: #00b7c7;
+  --primary: #2f6cf3;
+  --primary-strong: #4ca3ff;
+  --accent: #19b7bf;
 
   --card: rgba(255, 255, 255, 0.96);
-  --card-border: rgba(255, 255, 255, 0.74);
+  --card-border: rgba(255, 255, 255, 0.78);
 
   --shadow-lg: 0 24px 60px rgba(2, 12, 34, 0.34);
   --shadow-md: 0 18px 44px rgba(8, 23, 58, 0.18);
-  --shadow-sm: 0 10px 24px rgba(8, 23, 58, 0.12);
 
   --radius-xl: 28px;
   --radius-lg: 22px;
   --radius-md: 18px;
-  --radius-sm: 14px;
 
   --content-width: 520px;
 }
@@ -239,8 +236,7 @@ button {
     box-shadow 0.16s ease,
     background-color 0.16s ease,
     color 0.16s ease,
-    border-color 0.16s ease,
-    opacity 0.16s ease;
+    border-color 0.16s ease;
 }
 
 .btn:hover,
@@ -445,7 +441,7 @@ a:focus-visible {
 }
 
 .landing-v3 .landing-shell {
-  width: min(100%, var(--content-width));
+  width: min(100%, 520px);
   margin: 0 auto;
   padding: 18px 14px 28px;
 }
@@ -457,8 +453,6 @@ a:focus-visible {
 
 .landing-v3 .landing-hero-media {
   position: relative;
-  isolation: isolate;
-  min-height: 560px;
   border-radius: 34px;
   overflow: hidden;
   box-shadow: var(--shadow-lg);
@@ -466,38 +460,31 @@ a:focus-visible {
 }
 
 .landing-v3 .landing-hero-image {
-  position: relative;
-  z-index: 1;
   display: block;
   width: 100%;
-  height: 560px;
-  object-fit: cover;
-  object-position: 72% top;
-  opacity: 1;
-  visibility: visible;
+  height: auto;
 }
 
 .landing-v3 .landing-hero-overlay {
   position: absolute;
-  z-index: 2;
   inset: 0;
   background:
     linear-gradient(
       180deg,
-      rgba(6, 16, 38, 0.10) 0%,
-      rgba(8, 20, 49, 0.18) 26%,
-      rgba(9, 24, 58, 0.38) 56%,
-      rgba(7, 17, 39, 0.62) 100%
+      rgba(6, 16, 38, 0.05) 0%,
+      rgba(8, 20, 49, 0.08) 35%,
+      rgba(9, 24, 58, 0.16) 70%,
+      rgba(7, 17, 39, 0.26) 100%
     ),
-    radial-gradient(circle at 20% 22%, rgba(255, 255, 255, 0.18), transparent 24%);
+    radial-gradient(circle at 20% 22%, rgba(255, 255, 255, 0.10), transparent 24%);
   pointer-events: none;
 }
 
 .landing-v3 .landing-cta-card {
   position: relative;
-  z-index: 4;
+  z-index: 2;
   width: calc(100% - 28px);
-  margin: -46px auto 0;
+  margin: -20px auto 0;
   padding: 14px;
   border-radius: var(--radius-xl);
   background: var(--card);
@@ -565,10 +552,6 @@ a:focus-visible {
 ----------------------------- */
 
 @media (min-width: 700px) {
-  :root {
-    --content-width: 1120px;
-  }
-
   .landing-wrap,
   .landing-shell,
   .placeholder-wrap {
@@ -593,46 +576,35 @@ a:focus-visible {
   }
 
   .landing-v3 .landing-shell {
-    width: min(100%, 1120px);
-    padding: 28px 24px 40px;
-  }
-
-  .landing-v3 .landing-hero-media {
-    min-height: 720px;
-  }
-
-  .landing-v3 .landing-hero-image {
-    width: 100%;
-    height: 720px;
-    object-fit: cover;
-    object-position: center top;
+    width: min(100%, 520px);
+    padding: 28px 14px 40px;
   }
 
   .landing-v3 .landing-cta-card {
-    width: min(420px, calc(100% - 48px));
-    margin: -120px 34px 0 auto;
-    padding: 18px;
+    width: calc(100% - 28px);
+    margin: -20px auto 0;
+    padding: 14px;
   }
 
   .landing-v3 .about-card {
-    grid-template-columns: 88px 1fr;
-    gap: 18px;
-    padding: 24px 24px;
+    grid-template-columns: 72px 1fr;
+    gap: 14px;
+    padding: 20px 18px;
   }
 
   .landing-v3 .about-icon {
-    width: 88px;
-    height: 88px;
-    border-radius: 24px;
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
   }
 
   .landing-v3 .about-icon-svg {
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
   }
 
   .landing-v3 .about-body h2 {
-    font-size: 1.5rem;
+    font-size: 1.28rem;
   }
 
   .login-page .hero::after {
