@@ -902,6 +902,7 @@ h3 {
 
 .landing-v3 .landing-hero-media {
   position: relative;
+  min-height: 560px;
   border-radius: 34px;
   overflow: hidden;
   box-shadow: var(--landing-shadow);
@@ -911,10 +912,9 @@ h3 {
 .landing-v3 .landing-hero-image {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 9 / 16;
+  height: 560px;
   object-fit: cover;
-  object-position: center top;
+  object-position: 72% top;
 }
 
 .landing-v3 .landing-hero-overlay {
@@ -980,7 +980,7 @@ h3 {
   position: relative;
   z-index: 3;
   width: calc(100% - 28px);
-  margin: -74px auto 0;
+  margin: -46px auto 0;
   padding: 14px;
   border-radius: var(--landing-radius-xl);
   background: var(--landing-card);
