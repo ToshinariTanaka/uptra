@@ -6,17 +6,19 @@
   <title>ログイン | アプトレ</title>
   <link rel="stylesheet" href="styles/main.css" />
 </head>
-<body>
-  <main class="landing-wrap">
-    <section class="hero">
-      <p class="hero-kicker">Up塾トレーニング</p>
-      <h1 class="hero-title">ログイン</h1>
-      <p class="hero-copy">
-        塾生用ページです。<br />
-        パスワードを入力してください。
-      </p>
+<body class="login-page">
+  <main class="landing-wrap login-wrap">
+    <section class="hero login-hero">
+      <div class="login-hero-inner">
+        <p class="hero-kicker login-kicker">Up塾トレーニング</p>
+        <h1 class="hero-title login-title">ログイン</h1>
+        <p class="hero-copy login-copy">
+          塾生用ページです。<br />
+          パスワードを入力してください。
+        </p>
+      </div>
 
-      <section class="panel" style="margin-top: 24px;">
+      <section class="panel login-panel" aria-label="ログインフォーム">
         <form id="login-form">
           <label class="form-label" for="password">パスワード</label>
           <input
@@ -26,8 +28,8 @@
             placeholder="パスワードを入力"
             autocomplete="current-password"
           />
-          <button class="btn btn-primary" type="submit">ログイン</button>
-          <p id="error-message" style="color: #dc2626; margin-top: 12px; display: none;">
+          <button class="btn btn-primary login-submit" type="submit">ログイン</button>
+          <p id="error-message" class="login-error" style="display: none;">
             パスワードが違います。
           </p>
         </form>
