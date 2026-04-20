@@ -10,6 +10,7 @@
   --border: #dbe3ef;
   --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   --radius: 14px;
+  --content-measure: 36rem;
 }
 
 * {
@@ -22,6 +23,12 @@ body {
   background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
   color: var(--text);
   line-height: 1.65;
+}
+
+.landing-wrap {
+  width: min(100% - 2rem, 980px);
+  margin-inline: auto;
+  padding-bottom: 2.2rem;
 }
 
 .container {
@@ -46,6 +53,24 @@ h1 {
   margin: 0.5rem 0 0.75rem;
   font-size: clamp(2rem, 9vw, 3.2rem);
   line-height: 1.2;
+}
+
+.hero-title {
+  max-width: var(--content-measure);
+  margin-inline: auto;
+}
+
+.hero-copy {
+  margin: 0 auto;
+  max-width: var(--content-measure);
+  color: var(--muted);
+}
+
+.hero-actions {
+  width: min(100%, calc(var(--content-measure) - 2rem));
+  margin: 1.4rem auto 0;
+  display: grid;
+  gap: 0.7rem;
 }
 
 h2 {
@@ -124,6 +149,8 @@ h3 {
 }
 
 .panel {
+  width: min(100%, calc(var(--content-measure) - 2rem));
+  margin-inline: auto;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
