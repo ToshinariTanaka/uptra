@@ -6,42 +6,51 @@
   <title>アプトレ</title>
   <link rel="stylesheet" href="styles/main.css" />
 </head>
-<body class="landing-page">
-  <main class="landing-wrap">
-    <section class="hero" aria-labelledby="landing-title">
-      <div class="hero-visual" role="img" aria-label="宇宙背景と学習UIイメージ">
-        <div class="hero-content">
-          <p class="hero-kicker">Up塾トレーニング</p>
-          <h1 id="landing-title" class="hero-title">アプトレ</h1>
-          <p class="hero-tagline">AIと鍛える思考力トレーニング</p>
-          <p class="hero-copy">
-            AIが一人ひとりの理解に寄り添い、<br />
-            考える力を最大化。<br /><br />
-            未来を切り拓く思考力を、<br />
-            アプトレで手に入れよう。
+<body class="landing-v3">
+  <main class="landing-shell">
+    <section class="landing-hero" aria-labelledby="landing-title">
+      <div class="landing-hero-media">
+        <img
+          class="landing-hero-image"
+          src="assets/hero-mobile.png"
+          alt="アプトレの主役キャラクター・リーディー"
+        />
+        <div class="landing-hero-overlay"></div>
+
+        <div class="landing-hero-copy">
+          <p class="landing-kicker">Up塾トレーニング</p>
+          <h1 id="landing-title" class="landing-title">アプトレ</h1>
+          <p class="landing-subtitle">AIと鍛える思考力トレーニング</p>
+          <p class="landing-description">
+            毎日の「少しずつ」を積み上げ、テスト本番で解ける力へ。<br />
+            中高生の学習を、シンプルで続けやすいトレーニングで支えます。
           </p>
         </div>
       </div>
 
-      <div class="hero-actions" aria-label="主要メニュー">
-        <a class="btn btn-primary" href="login.html"><span aria-hidden="true">⇥</span> ログイン</a>
-        <a class="btn btn-secondary" href="signup.html"><span aria-hidden="true">👤</span> 会員登録</a>
-        <a class="btn btn-secondary" href="pricing.html"><span aria-hidden="true">¥</span> 料金を見る</a>
+      <div class="landing-cta-card">
+        <a class="landing-cta landing-cta-primary" href="login.html">ログイン</a>
+        <a class="landing-cta landing-cta-secondary" href="signup.html">会員登録</a>
+        <a class="landing-cta landing-cta-secondary" href="pricing.html">料金を見る</a>
       </div>
     </section>
 
-    <section class="panel about-panel" aria-labelledby="about-title">
-      <div class="about-icon" aria-hidden="true">🧠</div>
-      <div>
+    <section class="about-card" aria-labelledby="about-title">
+      <div class="about-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64" class="about-icon-svg">
+          <circle cx="32" cy="32" r="30"></circle>
+          <path d="M25 21c-5 0-9 4-9 9 0 3 1 5 3 7-1 1-2 3-2 5h9v-4h-4c0-2 2-4 5-4h2v-6h-2c-2 0-4-2-4-4s2-4 4-4c3 0 5 2 5 5v18h6V25c0-8-5-14-13-14zm15 4v4h4c2 0 4 2 4 4s-2 4-4 4h-2v6h2c3 0 5 2 5 4h-4v4h9c0-2-1-4-2-5 2-2 3-4 3-7 0-5-4-9-9-9h-6z"></path>
+        </svg>
+      </div>
+
+      <div class="about-body">
         <h2 id="about-title">アプトレとは</h2>
         <p>
-          アプトレは、知識の暗記だけでなく
-          「解く力・読み取る力・考える力」を育てる、
+          アプトレは、知識の暗記だけでなく、「解く力」を育てる、
           学習トレーニングサイトです。
         </p>
         <p>
-          毎日少しずつ進めやすい設計で、スマホでも
-          PCでも快適に学習に取り組めます。
+          毎日少しずつ進めやすい設計で、スマホでもPCでも快適に学習に取り組めます。
         </p>
       </div>
     </section>
