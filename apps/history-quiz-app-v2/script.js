@@ -1,0 +1,1306 @@
+const DATA_PATH = "quiz-data_rekishi3.json"
+const DEFAULT_QUESTION_COUNT = 10
+const STORAGE_PROFILE_KEY = "historyQuizAppLearningProfile_v1"
+const STORAGE_LAST_RESULT_KEY = "historyQuizAppLastResult_v1"
+
+const questionEl = document.getElementById("question")
+const choicesEl = document.getElementById("choices")
+const resultEl = document.getElementById("result")
+const summaryEl = document.getElementById("summary")
+const progressEl = document.getElementById("progress")
+
+const scoreDisplayEl = document.getElementById("score-display")
+const comboDisplayEl = document.getElementById("combo-display")
+const lifeDisplayEl = document.getElementById("life-display")
+const scoreEffectEl = document.getElementById("score-effect")
+
+const nextBtn = document.getElementById("next")
+const restartBtn = document.getElementById("restart")
+const changeSettingsBtn = document.getElementById("change-settings")
+const eraEl = document.getElementById("era")
+const modeEl = document.getElementById("mode")
+const questionCountEl = document.getElementById("question-count")
+const randomModeEl = document.getElementById("random-mode")
+const rangeModeEl = document.getElementById("range-mode")
+const practiceModeEl = document.getElementById("practice-mode")
+const startEraFieldEl = document.getElementById("start-era-field")
+const startEraEl = document.getElementById("start-era")
+const applySettingsBtn = document.getElementById("apply-settings")
+const studyRecordEl = document.getElementById("study-record")
+const studyRecordActionsEl = document.getElementById("study-record-actions")
+const clearLearningDataBtn = document.getElementById("clear-learning-data")
+const studyRecordMessageEl = document.getElementById("study-record-message")
+const settingsCardEl = document.querySelector(".settings-card")
+const quizCardEl = document.querySelector(".quiz-card")
+
+let allQuestions = []
+let selectedQuestions = []
+let activeQuestions = []
+let currentIndex = 0
+let initialCorrectCount = 0
+let initialWrongCount = 0
+let answered = false
+let currentStreak = 0
+let bestStreak = 0
+
+let score = 0
+let combo = 0
+let life = 3
+let isGameOver = false
+const MAX_LIFE = 5
+
+let audioContext = null
+let questionStats = new Map()
+let learningProfile = createDefaultLearningProfile()
+let lastSessionResult = null
+
+function createDefaultLearningProfile() {
+  return {
+    version: 1,
+    totalSessions: 0,
+    lastPlayedAt: "",
+    questions: {}
+  }
+}
+
+function createDefaultStoredQuestion(item = {}) {
+  return {
+    questionKey: item.questionKey || "",
+    era: item.era || "",
+    question: item.question || "",
+    totalSessionsSeen: 0,
+    totalAttempts: 0,
+    totalWrongAnswers: 0,
+    firstTryCorrectCount: 0,
+    firstTryWrongCount: 0,
+    timesCleared: 0,
+    lastPlayedAt: "",
+    lastCorrectRound: null
+  }
+}
+
+function shuffle(array) {
+  const copy = [...array]
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
+}
+
+function setMessage(message, options = {}) {
+  const { hidden = false, success = false, error = false } = options
+  resultEl.textContent = message
+  resultEl.classList.toggle("hidden", hidden)
+  resultEl.classList.toggle("success", success)
+  resultEl.classList.toggle("error", error)
+}
+
+function clearSummary() {
+  summaryEl.innerHTML = ""
+  summaryEl.classList.add("hidden")
+}
+
+function resetChoiceArea() {
+  choicesEl.innerHTML = ""
+}
+
+function scrollElementIntoView(element) {
+  if (!element) {
+    return
+  }
+
+  const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ? "auto"
+    : "smooth"
+
+  window.requestAnimationFrame(() => {
+    window.setTimeout(() => {
+      element.scrollIntoView({ behavior, block: "center" })
+    }, 120)
+  })
+}
+
+function bounceQuizCard() {
+  if (!quizCardEl) {
+    return
+  }
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return
+  }
+
+  quizCardEl.classList.remove("quiz-bounce")
+  void quizCardEl.offsetWidth
+  quizCardEl.classList.add("quiz-bounce")
+  window.setTimeout(() => {
+    quizCardEl.classList.remove("quiz-bounce")
+  }, 700)
+}
+
+function scrollToFirstQuestionWithBounce() {
+  if (!quizCardEl) {
+    return
+  }
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  const behavior = reduceMotion ? "auto" : "smooth"
+
+  window.requestAnimationFrame(() => {
+    window.setTimeout(() => {
+      const top = quizCardEl.getBoundingClientRect().top + window.scrollY - 12
+      window.scrollTo({ top: Math.max(0, top), behavior })
+
+      if (!reduceMotion) {
+        window.setTimeout(() => {
+          bounceQuizCard()
+        }, 420)
+      }
+    }, 90)
+  })
+}
+
+function stripAttachedReading(text) {
+  if (typeof text !== "string" || text.length === 0) {
+    return text
+  }
+
+  return text.replace(
+    /([^\s、。,.!?「」『』（）()【】\[\]]+?[一-龯々ヶヵ][^\s、。,.!?「」『』（）()【】\[\]]*?)([ァ-ヴー]{2,})(?=[、。,.!?」』）】\]\s]|$)/g,
+    "$1"
+  )
+}
+
+function sanitizeQuestionItem(item) {
+  return {
+    ...item,
+    questionKey: item.id ?? `${item.era || ""}::${item.question}`,
+    answer: stripAttachedReading(item.answer || ""),
+    wrongChoices: Array.isArray(item.wrongChoices)
+      ? item.wrongChoices.map((choice) => stripAttachedReading(choice))
+      : [],
+    explanation: stripAttachedReading(item.explanation || "")
+  }
+}
+
+function createRuntimeQuestion(item) {
+  return {
+    ...item,
+    choices: shuffle([item.answer, ...(item.wrongChoices || [])])
+  }
+}
+
+function cloneQuestion(item) {
+  return {
+    ...item,
+    wrongChoices: [...(item.wrongChoices || [])]
+  }
+}
+
+function createEmptyQuestionStat(item) {
+  return {
+    questionKey: item.questionKey,
+    era: item.era || "",
+    question: item.question,
+    attempts: 0,
+    firstAttemptCorrect: null
+  }
+}
+
+function ensureQuestionStat(item) {
+  if (!questionStats.has(item.questionKey)) {
+    questionStats.set(item.questionKey, createEmptyQuestionStat(item))
+  }
+  return questionStats.get(item.questionKey)
+}
+
+function resetQuestionStats(questions) {
+  questionStats = new Map()
+  questions.forEach((item) => {
+    questionStats.set(item.questionKey, createEmptyQuestionStat(item))
+  })
+}
+
+function recordQuestionAttempt(item, isCorrect) {
+  const stat = ensureQuestionStat(item)
+  stat.attempts += 1
+
+  if (stat.attempts === 1) {
+    stat.firstAttemptCorrect = isCorrect
+  }
+}
+
+function getHistoryItemsMarkup() {
+  const stats = selectedQuestions
+    .map((item) => ensureQuestionStat(item))
+    .sort((a, b) => a.question.localeCompare(b.question, "ja"))
+
+  const itemsMarkup = stats.map((stat) => {
+    const statusClass = stat.firstAttemptCorrect ? "history-status-good" : "history-status-review"
+    const statusText = stat.firstAttemptCorrect ? "初回正解" : "不正解"
+
+    return `
+      <li class="history-item">
+        <div class="history-head">
+          <span class="history-era">${stat.era || "総合"}</span>
+          <span class="history-status ${statusClass}">${statusText}</span>
+        </div>
+        <p class="history-question">${stat.question}</p>
+        <p class="history-note">解答回数 ${stat.attempts}回</p>
+      </li>
+    `
+  }).join("")
+
+  return `
+    <section class="history-section">
+      <p class="history-heading">正誤履歴</p>
+      <ul class="history-list">
+        ${itemsMarkup}
+      </ul>
+    </section>
+  `
+}
+
+function getAudioContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext
+  if (!AudioContextClass) {
+    return null
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioContextClass()
+  }
+
+  return audioContext
+}
+
+async function prepareAudio() {
+  const context = getAudioContext()
+  if (!context) {
+    return null
+  }
+
+  if (context.state === "suspended") {
+    await context.resume()
+  }
+
+  return context
+}
+
+function playTone(context, {
+  type = "sine",
+  frequency = 440,
+  startOffset = 0,
+  duration = 0.12,
+  volume = 0.18,
+  attack = 0.01,
+  release = 0.08,
+  endFrequency = frequency
+}) {
+  const oscillator = context.createOscillator()
+  const gainNode = context.createGain()
+  const now = context.currentTime
+  const startTime = now + startOffset
+  const stopTime = startTime + duration
+
+  oscillator.type = type
+  oscillator.frequency.setValueAtTime(frequency, startTime)
+  oscillator.frequency.linearRampToValueAtTime(endFrequency, stopTime)
+
+  gainNode.gain.setValueAtTime(0.0001, startTime)
+  gainNode.gain.linearRampToValueAtTime(volume, startTime + attack)
+  gainNode.gain.exponentialRampToValueAtTime(0.0001, stopTime + release)
+
+  oscillator.connect(gainNode)
+  gainNode.connect(context.destination)
+
+  oscillator.start(startTime)
+  oscillator.stop(stopTime + release)
+}
+
+async function playCorrectSound() {
+  try {
+    const context = await prepareAudio()
+    if (!context) {
+      return
+    }
+
+    playTone(context, {
+      type: "triangle",
+      frequency: 880,
+      endFrequency: 1040,
+      startOffset: 0,
+      duration: 0.12,
+      volume: 0.12,
+      attack: 0.01,
+      release: 0.1
+    })
+
+    playTone(context, {
+      type: "triangle",
+      frequency: 1175,
+      endFrequency: 1318,
+      startOffset: 0.11,
+      duration: 0.16,
+      volume: 0.14,
+      attack: 0.01,
+      release: 0.12
+    })
+
+    playTone(context, {
+      type: "sine",
+      frequency: 1568,
+      endFrequency: 1760,
+      startOffset: 0.22,
+      duration: 0.24,
+      volume: 0.1,
+      attack: 0.01,
+      release: 0.18
+    })
+  } catch (error) {
+    console.error("correct sound error", error)
+  }
+}
+
+async function playIncorrectSound() {
+  try {
+    const context = await prepareAudio()
+    if (!context) {
+      return
+    }
+
+    playTone(context, {
+      type: "sawtooth",
+      frequency: 190,
+      endFrequency: 130,
+      startOffset: 0,
+      duration: 0.22,
+      volume: 0.13,
+      attack: 0.01,
+      release: 0.08
+    })
+
+    playTone(context, {
+      type: "square",
+      frequency: 145,
+      endFrequency: 105,
+      startOffset: 0.06,
+      duration: 0.28,
+      volume: 0.08,
+      attack: 0.01,
+      release: 0.1
+    })
+  } catch (error) {
+    console.error("incorrect sound error", error)
+  }
+}
+
+function loadStoredState() {
+  try {
+    const rawProfile = window.localStorage.getItem(STORAGE_PROFILE_KEY)
+    if (rawProfile) {
+      const parsed = JSON.parse(rawProfile)
+      learningProfile = {
+        ...createDefaultLearningProfile(),
+        ...parsed,
+        questions: parsed.questions || {}
+      }
+    } else {
+      learningProfile = createDefaultLearningProfile()
+    }
+  } catch (error) {
+    console.error("load learning profile error", error)
+    learningProfile = createDefaultLearningProfile()
+  }
+
+  try {
+    const rawLastResult = window.localStorage.getItem(STORAGE_LAST_RESULT_KEY)
+    lastSessionResult = rawLastResult ? JSON.parse(rawLastResult) : null
+  } catch (error) {
+    console.error("load last result error", error)
+    lastSessionResult = null
+  }
+}
+
+function saveStoredState() {
+  try {
+    window.localStorage.setItem(STORAGE_PROFILE_KEY, JSON.stringify(learningProfile))
+  } catch (error) {
+    console.error("save learning profile error", error)
+  }
+
+  try {
+    if (lastSessionResult) {
+      window.localStorage.setItem(STORAGE_LAST_RESULT_KEY, JSON.stringify(lastSessionResult))
+    }
+  } catch (error) {
+    console.error("save last result error", error)
+  }
+}
+
+function getStoredQuestionRecord(itemOrKey) {
+  const key = typeof itemOrKey === "string" ? itemOrKey : itemOrKey.questionKey
+  const existing = learningProfile.questions?.[key]
+  if (existing) {
+    return existing
+  }
+
+  if (typeof itemOrKey === "string") {
+    return createDefaultStoredQuestion()
+  }
+
+  return createDefaultStoredQuestion(itemOrKey)
+}
+
+function getWeaknessScoreFromRecord(record) {
+  const wrongPressure = (record.totalWrongAnswers || 0) * 3 + (record.firstTryWrongCount || 0) * 4
+  const masteryRelief = (record.firstTryCorrectCount || 0) * 3 + Math.min(record.timesCleared || 0, 8)
+  return Math.max(0, wrongPressure - masteryRelief)
+}
+
+function getWeaknessScore(item) {
+  return getWeaknessScoreFromRecord(getStoredQuestionRecord(item))
+}
+
+function countWeakQuestions(questions) {
+  if (!Array.isArray(questions) || questions.length === 0) {
+    return 0
+  }
+
+  return questions.filter((item) => getWeaknessScore(item) > 0).length
+}
+
+function formatDateTime(value) {
+  if (!value) {
+    return "まだありません"
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return "まだありません"
+  }
+
+  return new Intl.DateTimeFormat("ja-JP", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date)
+}
+
+function getPracticeModeLabel(value) {
+  if (value === "weak-priority") {
+    return "苦手問題優先"
+  }
+  if (value === "weak-only") {
+    return "苦手問題だけ"
+  }
+  return "通常"
+}
+
+function getRangeModeLabel(value) {
+  if (!value || value === "all") {
+    return "全範囲"
+  }
+  return `${value}だけ`
+}
+
+function hasStoredLearningData() {
+  const practicedCount = Object.values(learningProfile.questions || {}).filter((record) => (record.totalSessionsSeen || 0) > 0).length
+  return practicedCount > 0 || Boolean(lastSessionResult)
+}
+
+function setStudyRecordMessage(message, options = {}) {
+  if (!studyRecordMessageEl) {
+    return
+  }
+
+  const { hidden = false } = options
+  studyRecordMessageEl.textContent = message
+  studyRecordMessageEl.classList.toggle("hidden", hidden)
+}
+
+function renderStudyRecord() {
+  if (!studyRecordEl) {
+    return
+  }
+
+  const practicedCount = Object.values(learningProfile.questions || {}).filter((record) => (record.totalSessionsSeen || 0) > 0).length
+  const weakAllCount = countWeakQuestions(allQuestions)
+  const rangeWeakCount = countWeakQuestions(getQuestionsForSelectedRange())
+  const lastAccuracy = lastSessionResult && Number.isFinite(lastSessionResult.accuracy)
+    ? `${lastSessionResult.accuracy}％`
+    : "--"
+  const lastPlayed = lastSessionResult ? formatDateTime(lastSessionResult.finishedAt) : "まだありません"
+  const lastMode = lastSessionResult
+    ? `${getPracticeModeLabel(lastSessionResult.practiceMode)} / ${getRangeModeLabel(lastSessionResult.rangeMode)}`
+    : "まだありません"
+
+  studyRecordEl.innerHTML = `
+    <p class="study-record-title">保存済み学習データ</p>
+    <div class="study-record-grid">
+      <div class="study-record-item">
+        <span class="study-record-label">学習済み問題</span>
+        <span class="study-record-value">${practicedCount}問</span>
+      </div>
+      <div class="study-record-item">
+        <span class="study-record-label">苦手問題</span>
+        <span class="study-record-value">${weakAllCount}問</span>
+      </div>
+      <div class="study-record-item">
+        <span class="study-record-label">現在の範囲の苦手</span>
+        <span class="study-record-value">${rangeWeakCount}問</span>
+      </div>
+      <div class="study-record-item">
+        <span class="study-record-label">前回正解率</span>
+        <span class="study-record-value">${lastAccuracy}</span>
+      </div>
+    </div>
+    <p class="study-record-note">前回学習: ${lastPlayed}<br>前回モード: ${lastMode}</p>
+  `
+  studyRecordEl.classList.remove("hidden")
+
+  if (studyRecordActionsEl && clearLearningDataBtn) {
+    const visible = hasStoredLearningData()
+    studyRecordActionsEl.classList.toggle("hidden", !visible)
+    clearLearningDataBtn.classList.toggle("hidden", !visible)
+  }
+}
+
+function clearStoredLearningData() {
+  const confirmed = window.confirm("保存済み学習データをクリアしますか？")
+  if (!confirmed) {
+    return
+  }
+
+  try {
+    window.localStorage.removeItem(STORAGE_PROFILE_KEY)
+    window.localStorage.removeItem(STORAGE_LAST_RESULT_KEY)
+    learningProfile = createDefaultLearningProfile()
+    lastSessionResult = null
+    renderStudyRecord()
+    setStudyRecordMessage("保存済み学習データをクリアしました。")
+  } catch (error) {
+    console.error("clear learning data error", error)
+    setStudyRecordMessage("学習データのクリアに失敗しました。")
+  }
+}
+
+function persistLearningData() {
+  const now = new Date().toISOString()
+
+  selectedQuestions.forEach((item) => {
+    const stat = ensureQuestionStat(item)
+    const record = {
+      ...createDefaultStoredQuestion(item),
+      ...getStoredQuestionRecord(item)
+    }
+
+    record.questionKey = item.questionKey
+    record.era = item.era || ""
+    record.question = item.question
+    record.totalSessionsSeen = (record.totalSessionsSeen || 0) + 1
+    record.totalAttempts = (record.totalAttempts || 0) + stat.attempts
+    record.totalWrongAnswers = (record.totalWrongAnswers || 0) + (stat.firstAttemptCorrect ? 0 : 1)
+
+    if (stat.firstAttemptCorrect) {
+      record.firstTryCorrectCount = (record.firstTryCorrectCount || 0) + 1
+      record.timesCleared = (record.timesCleared || 0) + 1
+      record.lastCorrectRound = 1
+    } else {
+      record.firstTryWrongCount = (record.firstTryWrongCount || 0) + 1
+      record.lastCorrectRound = null
+    }
+
+    record.lastPlayedAt = now
+    learningProfile.questions[item.questionKey] = record
+  })
+
+  learningProfile.totalSessions = (learningProfile.totalSessions || 0) + 1
+  learningProfile.lastPlayedAt = now
+
+  lastSessionResult = {
+    finishedAt: now,
+    accuracy: getInitialAccuracy(),
+    totalQuestions: selectedQuestions.length,
+    correctQuestions: initialCorrectCount,
+    practiceMode: practiceModeEl.value || "normal",
+    rangeMode: rangeModeEl.value || "all"
+  }
+
+  saveStoredState()
+  renderStudyRecord()
+}
+
+function populatePracticeModeOptions() {
+  const options = [
+    { value: "normal", label: "通常" },
+    { value: "weak-priority", label: "苦手問題優先" },
+    { value: "weak-only", label: "苦手問題だけ" }
+  ]
+
+  practiceModeEl.innerHTML = ""
+  options.forEach((optionData) => {
+    const option = document.createElement("option")
+    option.value = optionData.value
+    option.textContent = optionData.label
+    practiceModeEl.appendChild(option)
+  })
+
+  practiceModeEl.value = "normal"
+  practiceModeEl.disabled = false
+}
+
+function populateRangeOptions(questions) {
+  const eras = [...new Set(questions.map((item) => item.era).filter(Boolean))]
+  rangeModeEl.innerHTML = ""
+
+  const allOption = document.createElement("option")
+  allOption.value = "all"
+  allOption.textContent = "すべて"
+  rangeModeEl.appendChild(allOption)
+
+  eras.forEach((era) => {
+    const option = document.createElement("option")
+    option.value = era
+    option.textContent = `${era}だけ`
+    rangeModeEl.appendChild(option)
+  })
+
+  rangeModeEl.value = "all"
+  rangeModeEl.disabled = false
+}
+
+function getQuestionsForSelectedRange() {
+  const selectedRange = rangeModeEl.value
+  if (!selectedRange || selectedRange === "all") {
+    return [...allQuestions]
+  }
+  return allQuestions.filter((item) => item.era === selectedRange)
+}
+
+function applyPracticeModeToQuestions(questions) {
+  const practiceMode = practiceModeEl.value || "normal"
+  if (practiceMode === "normal") {
+    return [...questions]
+  }
+
+  const entries = shuffle(questions.map((item) => ({
+    item,
+    score: getWeaknessScore(item)
+  }))).sort((a, b) => b.score - a.score)
+
+  if (practiceMode === "weak-only") {
+    return entries.filter((entry) => entry.score > 0).map((entry) => entry.item)
+  }
+
+  return entries.map((entry) => entry.item)
+}
+
+function populateQuestionCountOptions(totalQuestions) {
+  questionCountEl.innerHTML = ""
+
+  if (totalQuestions <= 0) {
+    questionCountEl.disabled = true
+    return
+  }
+
+  const presets = [10, 20, 30, 50, 100].filter((count) => count < totalQuestions)
+  const counts = [...presets, totalQuestions]
+
+  counts.forEach((count) => {
+    const option = document.createElement("option")
+    option.value = String(count)
+    option.textContent = count === totalQuestions ? `全部（${count}問）` : `${count}問`
+    questionCountEl.appendChild(option)
+  })
+
+  const defaultCount = counts.includes(DEFAULT_QUESTION_COUNT)
+    ? DEFAULT_QUESTION_COUNT
+    : totalQuestions
+
+  questionCountEl.value = String(defaultCount)
+  questionCountEl.disabled = false
+}
+
+function populateStartEraOptions(questions) {
+  const eras = []
+  const seen = new Set()
+
+  questions.forEach((item) => {
+    if (!item.era || seen.has(item.era)) {
+      return
+    }
+
+    seen.add(item.era)
+    eras.push(item.era)
+  })
+
+  startEraEl.innerHTML = ""
+
+  eras.forEach((era) => {
+    const option = document.createElement("option")
+    option.value = era
+    option.textContent = `${era}から`
+    startEraEl.appendChild(option)
+  })
+
+  if (eras.length > 0) {
+    startEraEl.value = eras[0]
+  }
+}
+
+function refreshSettingOptions() {
+  const rangeQuestions = getQuestionsForSelectedRange()
+  const practiceQuestions = applyPracticeModeToQuestions(rangeQuestions)
+  populateQuestionCountOptions(practiceQuestions.length)
+  populateStartEraOptions(rangeQuestions)
+  updateStartEraVisibility()
+  renderStudyRecord()
+}
+
+function shouldUseStartEraFilter() {
+  const isAllRange = !rangeModeEl.value || rangeModeEl.value === "all"
+  const isNormalMode = !practiceModeEl.value || practiceModeEl.value === "normal"
+  const hasEraOptions = startEraEl.options.length > 0
+  return isAllRange && isNormalMode && hasEraOptions && Boolean(startEraEl.value)
+}
+
+function updateStartEraVisibility() {
+  const shouldShow = shouldUseStartEraFilter() || ((!rangeModeEl.value || rangeModeEl.value === "all") && (!practiceModeEl.value || practiceModeEl.value === "normal") && startEraEl.options.length > 0)
+  startEraFieldEl.classList.toggle("hidden", !shouldShow)
+  startEraEl.disabled = !shouldShow
+}
+
+function getSelectedQuestionCount() {
+  const availableQuestions = applyPracticeModeToQuestions(getQuestionsForSelectedRange()).length
+  const selectedCount = Number.parseInt(questionCountEl.value, 10)
+  if (!Number.isFinite(selectedCount) || selectedCount <= 0) {
+    return Math.min(DEFAULT_QUESTION_COUNT, availableQuestions)
+  }
+
+  return Math.min(selectedCount, availableQuestions)
+}
+
+function getStartIndexForSelectedEra(sourceQuestions) {
+  if (sourceQuestions.length === 0) {
+    return 0
+  }
+
+  const selectedEra = startEraEl.value
+  const startIndex = sourceQuestions.findIndex((item) => item.era === selectedEra)
+  return startIndex >= 0 ? startIndex : 0
+}
+
+function buildQuizFromSettings() {
+  const shouldShuffleQuestions = randomModeEl.checked
+  const questionCount = getSelectedQuestionCount()
+  const practiceMode = practiceModeEl.value || "normal"
+
+  let source = applyPracticeModeToQuestions(getQuestionsForSelectedRange())
+
+  if (practiceMode === "normal") {
+    if (shouldUseStartEraFilter()) {
+      const startIndex = getStartIndexForSelectedEra(source)
+      source = source.slice(startIndex)
+    }
+
+    if (shouldShuffleQuestions) {
+      source = shuffle(source)
+    }
+  }
+
+  return source.slice(0, questionCount).map(cloneQuestion)
+}
+
+function clearProgress() {
+  progressEl.innerHTML = ""
+}
+
+function getInitialLife(questionCount) {
+  return Math.max(2, Math.min(5, Math.floor(questionCount / 30) + 2))
+}
+
+function getLifeIcons() {
+  return "❤️".repeat(Math.max(0, life))
+}
+
+function updateGameStatus() {
+  if (scoreDisplayEl) {
+    scoreDisplayEl.textContent = `スコア：${score}`
+  }
+
+  if (comboDisplayEl) {
+    comboDisplayEl.textContent = `コンボ：${combo}`
+  }
+
+  if (lifeDisplayEl) {
+    lifeDisplayEl.textContent = life > 0 ? `ライフ：${getLifeIcons()}` : "ライフ：0"
+  }
+}
+
+function showScoreEffect(message) {
+  if (!scoreEffectEl) {
+    return
+  }
+
+  scoreEffectEl.textContent = message
+  scoreEffectEl.classList.remove("hidden")
+}
+
+function clearScoreEffect() {
+  if (!scoreEffectEl) {
+    return
+  }
+
+  scoreEffectEl.textContent = ""
+  scoreEffectEl.classList.add("hidden")
+}
+
+function handleCorrectGameLogic() {
+  if (isGameOver || life <= 0) {
+    combo = 0
+    currentStreak = 0
+    showScoreEffect("正解！ ただしライフ切れ中のためスコア加算なし")
+    updateGameStatus()
+    return
+  }
+
+  combo += 1
+  currentStreak = combo
+  bestStreak = Math.max(bestStreak, combo)
+
+  const gained = combo
+  score += gained
+
+  if (combo % 10 === 0) {
+    if (life < MAX_LIFE) {
+      life += 1
+      showScoreEffect(`+${gained}点！ ${combo}コンボ！ ライフ+1`)
+    } else {
+      showScoreEffect(`+${gained}点！ ${combo}コンボ！`)
+    }
+  } else {
+    showScoreEffect(`+${gained}点！ ${combo}コンボ！`)
+  }
+
+  updateGameStatus()
+}
+
+function handleWrongGameLogic() {
+  combo = 0
+  currentStreak = 0
+
+  if (isGameOver || life <= 0) {
+    life = 0
+    showScoreEffect("ミス！ すでにライフ切れです")
+    updateGameStatus()
+    return
+  }
+
+  life = Math.max(0, life - 1)
+
+  if (life === 0) {
+    isGameOver = true
+    showScoreEffect("ライフ0！ 以後スコア加算なし")
+  } else {
+    showScoreEffect("ミス！ コンボリセット・ライフ-1")
+  }
+
+  updateGameStatus()
+}
+
+function updateModeBadge() {
+  const practiceMode = practiceModeEl.value || "normal"
+  if (practiceMode !== "normal") {
+    modeEl.textContent = getPracticeModeLabel(practiceMode)
+    modeEl.classList.remove("hidden")
+    return
+  }
+
+  modeEl.textContent = ""
+  modeEl.classList.add("hidden")
+}
+
+function getInitialAccuracy() {
+  if (selectedQuestions.length === 0) {
+    return 0
+  }
+
+  return Math.round((initialCorrectCount / selectedQuestions.length) * 100)
+}
+
+function updateProgress(answeredThisQuestion = false) {
+  if (selectedQuestions.length === 0) {
+    clearProgress()
+    return
+  }
+
+  const questionNumber = Math.min(currentIndex + 1, selectedQuestions.length)
+  const answeredCount = Math.min(
+    currentIndex + (answeredThisQuestion ? 1 : 0),
+    selectedQuestions.length
+  )
+  const accuracy = answeredCount === 0
+    ? null
+    : Math.round((initialCorrectCount / answeredCount) * 100)
+
+  progressEl.innerHTML = `
+    <span class="progress-item progress-primary">${questionNumber}/${selectedQuestions.length}問</span>
+    <span class="progress-item">${accuracy === null ? "正解率--" : `正解率${accuracy}％`}</span>
+  `
+}
+
+function getCurrentQuestion() {
+  return activeQuestions[currentIndex]
+}
+
+function renderQuestion() {
+  const item = getCurrentQuestion()
+  if (!item) {
+    showFinalScore()
+    return
+  }
+
+  answered = false
+  clearSummary()
+  updateModeBadge()
+  questionEl.textContent = item.question
+  eraEl.textContent = item.era || ""
+  eraEl.classList.toggle("hidden", !item.era)
+
+  setMessage("", { hidden: true })
+
+  clearScoreEffect()
+  updateGameStatus()
+
+  nextBtn.disabled = true
+  nextBtn.classList.add("hidden")
+  restartBtn.classList.add("hidden")
+  changeSettingsBtn.classList.add("hidden")
+  updateProgress(false)
+
+  resetChoiceArea()
+
+  item.choices.forEach((choice) => {
+    const button = document.createElement("button")
+    button.type = "button"
+    button.className = "choice-btn"
+    button.textContent = choice
+    button.setAttribute("role", "listitem")
+    button.addEventListener("click", () => selectChoice(choice))
+    choicesEl.appendChild(button)
+  })
+}
+
+function selectChoice(selectedChoice) {
+  if (answered) {
+    return
+  }
+
+  answered = true
+
+  const item = getCurrentQuestion()
+  const buttons = Array.from(document.querySelectorAll(".choice-btn"))
+  const isCorrect = selectedChoice === item.answer
+
+  buttons.forEach((button) => {
+    button.disabled = true
+    if (button.textContent === item.answer) {
+      button.classList.add("correct")
+    } else if (button.textContent === selectedChoice) {
+      button.classList.add("incorrect")
+    }
+  })
+
+  recordQuestionAttempt(item, isCorrect)
+
+  if (isCorrect) {
+    initialCorrectCount += 1
+    handleCorrectGameLogic()
+    setMessage(`正解です。${item.explanation}`, { success: true })
+    void playCorrectSound()
+  } else {
+    handleWrongGameLogic()
+    setMessage(`不正解です。正解は「${item.answer}」です。${item.explanation}`, { error: true })
+    void playIncorrectSound()
+  }
+
+  updateProgress(true)
+  nextBtn.disabled = false
+  nextBtn.classList.remove("hidden")
+  scrollElementIntoView(nextBtn)
+}
+
+function getRankLabel(accuracy, depleted) {
+  if (!depleted && accuracy >= 95) {
+    return "S"
+  }
+  if (!depleted && accuracy >= 80) {
+    return "A"
+  }
+  if (accuracy >= 70) {
+    return "B"
+  }
+  if (accuracy >= 50) {
+    return "C"
+  }
+  return "D"
+}
+
+function getEvaluationComment(accuracy, depleted) {
+  if (!depleted && accuracy >= 95) {
+    return "完璧です。素晴らしい完走でした。"
+  }
+  if (!depleted && accuracy >= 80) {
+    return "とても良い結果です。"
+  }
+  if (accuracy >= 70) {
+    return "安定しています。あと少しで上位です。"
+  }
+  if (accuracy >= 50) {
+    return "復習するとさらに伸びます。"
+  }
+  return "基礎の定着を進めましょう。"
+}
+
+function getEraComment() {
+  const eras = [...new Set(selectedQuestions.map((item) => item.era).filter(Boolean))]
+  if (eras.length === 0) {
+    return ""
+  }
+  if (eras.length === 1) {
+    return `${eras[0]}時代の重要事項を確認しました。`
+  }
+  return `${eras[0]}から${eras[eras.length - 1]}までを確認しました。`
+}
+
+function showFinalScore() {
+  const totalQuestions = selectedQuestions.length
+  const accuracy = getInitialAccuracy()
+  const missedCount = totalQuestions - initialCorrectCount
+  const depleted = isGameOver || life <= 0
+  const rank = getRankLabel(accuracy, depleted)
+  const comment = getEvaluationComment(accuracy, depleted)
+  const cumulativeWeakCount = countWeakQuestions(allQuestions)
+  const historyMarkup = getHistoryItemsMarkup()
+
+  persistLearningData()
+
+  modeEl.classList.add("hidden")
+  eraEl.classList.add("hidden")
+  questionEl.textContent = "クイズ終了"
+  resetChoiceArea()
+  setMessage("", { hidden: true })
+  clearProgress()
+
+  summaryEl.innerHTML = `
+    <p class="summary-heading">総合結果</p>
+    <p class="summary-score">${totalQuestions}問中 ${initialCorrectCount}問正解！</p>
+    <p class="summary-subscore">正答率 ${accuracy}％</p>
+    <div class="summary-meta">
+      <div class="summary-item">
+        <span class="summary-label">最終スコア</span>
+        <span class="summary-value">${score}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">ランク</span>
+        <span class="summary-value">${rank}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">ミス数</span>
+        <span class="summary-value">${missedCount}問</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">最高コンボ</span>
+        <span class="summary-value">${bestStreak}問</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">ライフ切れ</span>
+        <span class="summary-value">${depleted ? "あり" : "なし"}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">累計苦手問題</span>
+        <span class="summary-value">${cumulativeWeakCount}問</span>
+      </div>
+    </div>
+    <p class="summary-comment">${comment}${getEraComment() ? `<br>${getEraComment()}` : ""}</p>
+    ${historyMarkup}
+  `
+  summaryEl.classList.remove("hidden")
+
+  nextBtn.classList.add("hidden")
+  restartBtn.classList.remove("hidden")
+  changeSettingsBtn.classList.remove("hidden")
+  scrollElementIntoView(summaryEl)
+}
+
+function advanceQuiz() {
+  currentIndex += 1
+
+  if (currentIndex < activeQuestions.length) {
+    renderQuestion()
+    return
+  }
+
+  initialWrongCount = selectedQuestions.length - initialCorrectCount
+  showFinalScore()
+}
+
+function resetQuizState() {
+  currentIndex = 0
+  initialCorrectCount = 0
+  initialWrongCount = 0
+  answered = false
+  currentStreak = 0
+  bestStreak = 0
+
+  score = 0
+  combo = 0
+  life = getInitialLife(selectedQuestions.length)
+  isGameOver = false
+
+  clearSummary()
+  clearScoreEffect()
+  updateGameStatus()
+}
+
+function startQuiz(options = {}) {
+  const { scrollToQuestion = false } = options
+
+  if (allQuestions.length === 0) {
+    return
+  }
+
+  selectedQuestions = buildQuizFromSettings()
+
+  if (selectedQuestions.length === 0) {
+    questionEl.textContent = "出題できる問題がありません"
+    resetChoiceArea()
+    clearSummary()
+    clearProgress()
+
+    const practiceMode = practiceModeEl.value || "normal"
+    const message = practiceMode === "weak-only"
+      ? "保存データに苦手問題がまだありません。まず通常モードで学習してください。"
+      : "その条件では出題できる問題が見つかりませんでした。設定を変えてください。"
+
+    setMessage(message, { error: true })
+    nextBtn.classList.add("hidden")
+    restartBtn.classList.add("hidden")
+    changeSettingsBtn.classList.remove("hidden")
+    return
+  }
+
+  resetQuestionStats(selectedQuestions)
+  activeQuestions = selectedQuestions.map(createRuntimeQuestion)
+  resetQuizState()
+  renderQuestion()
+
+  if (scrollToQuestion) {
+    scrollToFirstQuestionWithBounce()
+  }
+}
+
+async function loadQuiz() {
+  try {
+    questionEl.textContent = "問題を読み込み中…"
+    eraEl.classList.add("hidden")
+    modeEl.classList.add("hidden")
+    resetChoiceArea()
+    clearSummary()
+    setMessage("", { hidden: true })
+    clearProgress()
+    nextBtn.classList.add("hidden")
+    restartBtn.classList.add("hidden")
+    changeSettingsBtn.classList.add("hidden")
+    questionCountEl.disabled = true
+    randomModeEl.disabled = true
+    rangeModeEl.disabled = true
+    practiceModeEl.disabled = true
+    startEraEl.disabled = true
+    applySettingsBtn.disabled = true
+
+    loadStoredState()
+
+    const response = await fetch(DATA_PATH, { cache: "no-store" })
+    if (!response.ok) {
+      throw new Error("問題データを読み込めませんでした。")
+    }
+
+    const rawQuiz = await response.json()
+    if (!Array.isArray(rawQuiz) || rawQuiz.length === 0) {
+      throw new Error("出題できる問題が見つかりませんでした。")
+    }
+
+    allQuestions = rawQuiz.map(sanitizeQuestionItem)
+    populateRangeOptions(allQuestions)
+    populatePracticeModeOptions()
+    refreshSettingOptions()
+    randomModeEl.checked = true
+    randomModeEl.disabled = false
+    applySettingsBtn.disabled = false
+    renderStudyRecord()
+    startQuiz()
+  } catch (error) {
+    eraEl.classList.add("hidden")
+    modeEl.classList.add("hidden")
+    questionEl.textContent = "読み込みエラー"
+    resetChoiceArea()
+    clearSummary()
+    clearProgress()
+    nextBtn.classList.add("hidden")
+    restartBtn.classList.add("hidden")
+    changeSettingsBtn.classList.add("hidden")
+    questionCountEl.innerHTML = ""
+    questionCountEl.disabled = true
+    randomModeEl.disabled = true
+    rangeModeEl.innerHTML = ""
+    rangeModeEl.disabled = true
+    practiceModeEl.innerHTML = ""
+    practiceModeEl.disabled = true
+    startEraEl.innerHTML = ""
+    startEraEl.disabled = true
+    updateStartEraVisibility()
+    applySettingsBtn.disabled = true
+    setMessage(error.message || "問題データを読み込めませんでした。", { error: true })
+  }
+}
+
+nextBtn.addEventListener("click", () => {
+  advanceQuiz()
+})
+
+restartBtn.addEventListener("click", () => {
+  startQuiz()
+})
+
+changeSettingsBtn.addEventListener("click", () => {
+  scrollElementIntoView(settingsCardEl)
+})
+
+randomModeEl.addEventListener("change", () => {
+  updateStartEraVisibility()
+})
+
+rangeModeEl.addEventListener("change", () => {
+  refreshSettingOptions()
+})
+
+practiceModeEl.addEventListener("change", () => {
+  refreshSettingOptions()
+})
+
+applySettingsBtn.addEventListener("click", () => {
+  setStudyRecordMessage("", { hidden: true })
+  startQuiz({ scrollToQuestion: true })
+})
+
+if (clearLearningDataBtn) {
+  clearLearningDataBtn.addEventListener("click", () => {
+    clearStoredLearningData()
+  })
+}
+
+loadQuiz()
