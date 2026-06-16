@@ -327,6 +327,18 @@ a:focus-visible {
   background: rgba(18, 50, 99, 0.58);
 }
 
+.btn-unavailable {
+  color: #d8e4f5;
+  background: rgba(94, 113, 143, 0.52);
+  border: 1px solid rgba(216, 228, 245, 0.22);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.btn-unavailable:hover {
+  transform: none;
+}
+
 /* -----------------------------
    フォーム
 ----------------------------- */
