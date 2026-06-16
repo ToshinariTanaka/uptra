@@ -1,9 +1,10 @@
 # Project Status
 
 ## 2026-06-16
-- `dashboard.html` から英語学習アプリ／英単語RPGのGitHub Pages版リンクを削除。
-- 正しいRender URLが未確認のため、仮URLを入れず「Render URL未設定」と表示。
-- 誤ったRender URL `https://english-words-game.onrender.com/study-app/` は使用しない方針を明記。
+- `dashboard.html` の英語学習アプリ／英単語RPG導線を確認済みRender URLに更新。
+- 英語学習アプリは `https://english-words-game-1ph3.onrender.com/study-app/` に設定。
+- 英単語RPGは `https://english-words-game-1ph3.onrender.com/` に設定。
+- 誤ったRender URLは使用しない方針を維持。
 
 ## 2026-06-03
 - `dashboard.html` の学習メニュー先頭に「中学英単語RPGを開く」を追加。
