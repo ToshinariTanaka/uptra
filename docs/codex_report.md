@@ -1,32 +1,34 @@
 ## 今回やったこと
-- UpTra本体の `dashboard.html` にある「Render URL未設定」だった英語学習アプリ／英単語RPG導線を、確認済みのRender Web Service URLへ差し替えました。
-- 英語学習アプリのリンク先を `https://english-words-game-1ph3.onrender.com/study-app/` に設定しました。
-- 英単語RPGのリンク先を `https://english-words-game-1ph3.onrender.com/` に設定しました。
-- 以前の誤URL（サービス名に `-1ph3` が付かないURL）を使用していないことを確認しました。
-- 今日のおすすめ文言から「正しいRender URLが確認でき次第有効化します」という未設定向け説明を削除しました。
+- 固定パスワードと `sessionStorage` による疑似認証を廃止し、会員ID・パスワードによる `POST /api/auth/member/login` に移行しました。
+- `GET /api/auth/session?accountType=member` の成功レスポンスを検証し、有効期限切れを含む無効セッションをログイン画面へ戻すようにしました。
+- セッションのCSRFトークンと `{ "accountType": "member" }` を使うログアウトへ移行しました。
+- 認証プロキシを3つの許可パスと必要メソッドに限定し、CSRFなしのログアウト、許可外パス、不正メソッドを拒否しました。
+- `Set-Cookie` の `Domain` だけを削除し、host-only化する処理を追加しました。
+- 公開signupの導線とページを削除しました。
 
 ## 変更ファイル
-- `dashboard.html`
-- `README.md`
-- `docs/project_status.md`
-- `docs/next_tasks.md`
-- `docs/codex_report.md`
+- `login.html`、`dashboard.html`、`index.html`、`signup.html`（削除）
+- `scripts/auth-client.js`
+- `functions/api/[[path]].js`
+- `test/auth-client.test.js`、`test/auth-proxy.test.js`
+- `package.json`
+- `README.md`、`docs/architecture.md`、`docs/project_status.md`、`docs/next_tasks.md`、`docs/codex_report.md`
 
 ## テスト結果
-- `python - <<'PY' ... PY` を実行し、`dashboard.html` の英語学習アプリリンクが `https://english-words-game-1ph3.onrender.com/study-app/`、英単語RPGリンクが `https://english-words-game-1ph3.onrender.com/` であることを確認しました。
-- `! rg "english-words-game\.onrender\.com|Render URL未設定" dashboard.html README.md docs/project_status.md docs/next_tasks.md` を実行し、誤URLと未設定表示が対象ファイルに残っていないことを確認しました。
-- `git diff --check` を実行し、空白エラーがないことを確認しました。
-- `python -m http.server 4176 >/tmp/uptra-http.log 2>&1 & ...` を実行し、ローカル配信した `dashboard.html` から指定URLを含むHTMLが取得できることを確認しました。
+- `npm test`: 8件成功。API本文・パス、成功レスポンス、CSRF、メソッド拒否、パス拒否、Cookie属性、期限切れセッションを確認しました。
+- `git diff --check`: 成功。空白エラーはありません。
+- 禁止API、emailログイン、signup導線、旧疑似認証が実装に残っていないことを静的検索で確認しました。
 
 ## 注意点
-- 実際のRenderアプリ画面表示やログイン後の外部遷移は、この環境ではブラウザ操作を行っていないため未確認です。
-- UI変更は、無効表示だった2つの導線を通常のリンクボタンへ戻す内容です。スクリーンショットは未取得です。
-- 既存の「中学英単語RPGを開く」GitHub Pages導線は、今回の指定対象外のため維持しています。
+- 本番環境・本番DBには接続していません。
+- デプロイ環境で `AUTH_API_ORIGIN` の設定が必要です。値はリポジトリに記録していません。
+- UIはログインフォームへの会員ID欄追加とsignupボタン削除を含みます。自動ブラウザ環境がないためスクリーンショットは未取得です。
+- 実際の認証APIを使う結合確認はステージングで未実施です。
 
 ## 次にやるべきこと
-- デプロイ後、UpTraにログインして「英語学習アプリ」をクリックし、遷移先URLが `https://english-words-game-1ph3.onrender.com/study-app/` になることを実機ブラウザで確認してください。
-- デプロイ後、「英単語RPG」をクリックし、遷移先URLが `https://english-words-game-1ph3.onrender.com/` になることを実機ブラウザで確認してください。
-- Render版で英単語・チャンク・英文和訳の3モード、CSV/Excelアップロード、PC/iPhone間の同一URL共有を確認してください。
+- ステージングに `AUTH_API_ORIGIN` を設定し、ブラウザでログイン、再読込、期限切れ、ログアウトを確認してください。
+- 複数Cookieを返す実際の認証レスポンスでも属性が期待どおり維持されることを確認してください。
 
 ## チャッピーに相談すべき点
-- 既存の「中学英単語RPGを開く」GitHub Pages導線もRender版へ統一するかどうか確認してください。
+- デプロイ先がCloudflare Pages Functionsであること、およびステージング認証APIのオリジン設定方法を確認してください。
+- 自動テストは通過していますが、ステージング結合確認前のため、現時点では条件付きマージ可（設定・結合確認後を推奨）です。

@@ -1,5 +1,11 @@
 # Project Status
 
+## 2026-07-23
+- 会員認証を正式API契約（会員IDログイン、memberセッション、CSRF付きログアウト）へ移行。
+- 認証プロキシを3経路・必要メソッドだけのallowlist方式で追加。
+- 公開signup導線とページ、固定パスワードによる疑似認証を廃止。
+- API契約、CSRF、拒否制御、Cookie書き換え、セッション失効の自動テストを追加。
+
 ## 2026-06-16
 - `dashboard.html` の英語学習アプリ／英単語RPG導線を確認済みRender URLに更新。
 - 英語学習アプリは `https://english-words-game-1ph3.onrender.com/study-app/` に設定。
