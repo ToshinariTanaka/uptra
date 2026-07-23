@@ -1,5 +1,10 @@
 # Project Status
 
+## 2026-07-22
+- Issue #16向けに、固定パスワード認証を外部会員認証基盤へ置き換える最小クライアントを実装。
+- 認証基盤URLは未設定のままとし、本番環境・本番DBには変更を加えていない。
+- Draft PRで認証基盤とのAPI契約確認および検証環境での結合テスト待ち。
+
 ## 2026-06-16
 - `dashboard.html` の英語学習アプリ／英単語RPG導線を確認済みRender URLに更新。
 - 英語学習アプリは `https://english-words-game-1ph3.onrender.com/study-app/` に設定。

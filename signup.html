@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- デプロイ時に、秘密情報を含まない会員認証基盤の公開URLを content に設定します。 -->
+    <meta name="uptra-auth-base-url" content="" />
     <title>会員登録 | アプトレ</title>
     <link rel="stylesheet" href="styles/main.css" />
   </head>
@@ -10,10 +12,25 @@
     <main class="placeholder-wrap">
       <section class="placeholder-card">
         <p class="site-kicker">アプトレ</p>
-        <h1>会員登録機能は準備中です</h1>
-        <p>学習データを継続管理できる会員登録ページを準備しています。</p>
+        <h1>会員登録</h1>
+        <p>会員認証基盤でアカウントを作成します。</p>
+        <button id="signup-btn" class="btn btn-primary" type="button">会員登録へ進む</button>
+        <p id="error-message" class="login-error" hidden></p>
         <a class="text-link" href="index.html">トップへ戻る</a>
       </section>
     </main>
+    <script type="module">
+      import { DEFAULT_PATHS, redirectToAuth } from "./scripts/auth-client.js";
+
+      document.getElementById("signup-btn").addEventListener("click", function () {
+        const errorMessage = document.getElementById("error-message");
+        try {
+          redirectToAuth(DEFAULT_PATHS.signup, "dashboard.html");
+        } catch (error) {
+          errorMessage.textContent = error.message;
+          errorMessage.hidden = false;
+        }
+      });
+    </script>
   </body>
 </html>

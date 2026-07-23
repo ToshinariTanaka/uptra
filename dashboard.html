@@ -3,11 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- デプロイ時に、秘密情報を含まない会員認証基盤の公開URLを content に設定します。 -->
+  <meta name="uptra-auth-base-url" content="" />
   <title>会員ページ | アプトレ</title>
   <link rel="stylesheet" href="styles/main.css" />
-  <script>
-    if (sessionStorage.getItem("uptraLoggedIn") !== "true") {
-      window.location.href = "login.html";
+  <style id="auth-pending-style">
+    body { visibility: hidden; }
+  </style>
+  <script type="module">
+    import { requireMember } from "./scripts/auth-client.js";
+    if (await requireMember()) {
+      document.getElementById("auth-pending-style").remove();
     }
   </script>
 </head>
@@ -41,10 +47,15 @@
     </section>
   </main>
 
-  <script>
-    document.getElementById("logout-btn").addEventListener("click", function () {
-      sessionStorage.removeItem("uptraLoggedIn");
-      window.location.href = "login.html";
+  <script type="module">
+    import { logout } from "./scripts/auth-client.js";
+    document.getElementById("logout-btn").addEventListener("click", async function () {
+      this.disabled = true;
+      try {
+        await logout();
+      } catch {
+        this.disabled = false;
+      }
     });
   </script>
 </body>

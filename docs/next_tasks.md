@@ -1,5 +1,9 @@
 # Next Tasks
 
+- [ ] Issue #16本文のAPI契約と `scripts/auth-client.js` のエンドポイントを照合する
+- [ ] 検証環境へ会員認証基盤の公開URLを設定し、ログイン・期限切れ・ログアウトを結合テストする
+- [ ] 認証基盤側のCookie属性、資格情報付きCORS、`return_to` 許可リストを確認する
+
 - [ ] history-quiz-app-v2 の独自問題追加
 - [ ] v2 向けUI差分（ヘッダーやバッジ表示）
 - [ ] dashboard での学習進捗連携検討
