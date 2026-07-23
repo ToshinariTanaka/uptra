@@ -407,6 +407,10 @@ a:focus-visible {
   width: min(100%, 560px);
 }
 
+.login-page .login-hero-inner {
+  padding-bottom: 64px;
+}
+
 .login-page .hero {
   min-height: 560px;
   padding-bottom: 96px;
@@ -443,6 +447,14 @@ a:focus-visible {
   position: relative;
   z-index: 2;
   margin-top: -64px;
+}
+
+.login-page .login-panel .form-label {
+  color: var(--text-main);
+}
+
+.login-page .login-panel .form-label:not(:first-child) {
+  margin-top: 12px;
 }
 
 /* -----------------------------
