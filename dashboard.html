@@ -3,37 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>会員ページ | アプトレ</title>
+  <meta name="description" content="個別指導Up塾の学習トレーニングサイト『アプトレ』会員メニューです。" />
+  <title>学習メニュー | アプトレ</title>
   <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/member.css" />
 </head>
-<body>
-  <main class="landing-wrap">
-    <section class="hero">
-      <p class="hero-kicker">Up塾トレーニング</p>
-      <h1 class="hero-title">学習メニュー</h1>
-      <p class="hero-copy">
-        ログインしました。<br />
-        ここから学習を始めてください。
-      </p>
+<body class="member-page member-dashboard-page">
+  <main class="member-shell">
+    <header class="dashboard-header">
+      <a class="dashboard-brand" href="./">
+        <span class="dashboard-brand-mark" aria-hidden="true">Up</span>
+        <span>アプトレ</span>
+      </a>
+      <button id="logout-btn" class="dashboard-logout" type="button">ログアウト</button>
+    </header>
 
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="https://toshinaritanaka.github.io/junior-english-words-game/">中学英単語RPGを開く</a>
-        <a class="btn btn-accent" href="trial-history.html">中学歴史一問一答基礎</a>
-        <a class="btn btn-accent" href="apps/history-quiz-app-v2/index.html">中学歴史一問一答 v2（開発版）</a>
-        <a class="btn btn-primary" href="https://gramup.sintechadev.top/ask-ai">英文読解トレーニング</a>
-        <a class="btn btn-essay" href="https://toshinaritanaka.github.io/essay-training-app/">小論文トレーニング</a>
-        <a class="btn btn-primary" href="https://english-words-game-junior.onrender.com/study-app/">中学生英単語アプリ</a>
-        <a class="btn btn-primary" href="https://english-words-game-1ph3.onrender.com/study-app/">英単語・チャンク・文節・英文トレーニング</a>
-        <button id="logout-btn" class="btn btn-secondary" type="button">ログアウト</button>
+    <section class="dashboard-intro" aria-labelledby="dashboard-title">
+      <p class="member-eyebrow">個別指導Up塾　生徒専用</p>
+      <h1 id="dashboard-title">今日の学習を選ぶ</h1>
+      <p>
+        たくさん取り組む必要はありません。今日やるものを1つ選び、短時間でも集中して進めましょう。
+      </p>
+    </section>
+
+    <div class="study-section-title">
+      <h2>学習メニュー</h2>
+      <p>カードを押すと各トレーニングが開きます。</p>
+    </div>
+
+    <section class="study-grid" aria-label="学習アプリ一覧">
+      <a class="study-card" href="https://english-words-game-junior.onrender.com/study-app/">
+        <span class="study-tag">英語</span>
+        <h3>中学生英単語アプリ</h3>
+        <p>英単語・チャンク・文節・英文を、中学生向けの範囲で反復します。</p>
+        <span class="study-open">トレーニングを開く →</span>
+      </a>
+
+      <a class="study-card" href="https://english-words-game-1ph3.onrender.com/study-app/">
+        <span class="study-tag">英語</span>
+        <h3>英単語・チャンク・文節・英文</h3>
+        <p>語彙から英文理解まで、段階的に英語処理力を鍛えます。</p>
+        <span class="study-open">トレーニングを開く →</span>
+      </a>
+
+      <a class="study-card" href="https://toshinaritanaka.github.io/junior-english-words-game/">
+        <span class="study-tag">英語</span>
+        <h3>中学英単語RPG</h3>
+        <p>ゲーム感覚で問題を解きながら、中学英単語を身につけます。</p>
+        <span class="study-open">トレーニングを開く →</span>
+      </a>
+
+      <a class="study-card study-card-accent" href="https://gramup.sintechadev.top/ask-ai">
+        <span class="study-tag">英文読解</span>
+        <h3>英文読解トレーニング</h3>
+        <p>英文の構造を捉え、前から意味を理解する読み方を練習します。</p>
+        <span class="study-open">トレーニングを開く →</span>
+      </a>
+
+      <a class="study-card study-card-accent" href="trial-history.html">
+        <span class="study-tag">社会</span>
+        <h3>中学歴史一問一答 基礎</h3>
+        <p>高校入試で必要な歴史知識を、一問一答で確実に確認します。</p>
+        <span class="study-open">トレーニングを開く →</span>
+      </a>
+
+      <a class="study-card study-card-accent" href="apps/history-quiz-app-v2/index.html">
+        <span class="study-tag">社会・開発版</span>
+        <h3>中学歴史一問一答 v2</h3>
+        <p>新しい形式で歴史知識を確認する開発中のトレーニングです。</p>
+        <span class="study-open">トレーニングを開く →</span>
+      </a>
+
+      <a class="study-card study-card-purple" href="https://toshinaritanaka.github.io/essay-training-app/">
+        <span class="study-tag">国語</span>
+        <h3>小論文トレーニング</h3>
+        <p>問いに正面から答え、根拠を示して文章を組み立てる力を養います。</p>
+        <span class="study-open">トレーニングを開く →</span>
+      </a>
+    </section>
+
+    <section class="dashboard-note" aria-labelledby="daily-tip-title">
+      <div class="dashboard-note-mark" aria-hidden="true">1</div>
+      <div>
+        <h2 id="daily-tip-title">今日のおすすめ</h2>
+        <p>迷ったときは、英語または歴史から1つ選び、10分だけ集中して進めましょう。</p>
       </div>
     </section>
 
-    <section class="panel">
-      <h2>今日のおすすめ</h2>
-      <p>
-        中学生英単語アプリ・英単語RPG・英単語/チャンク/文節/英文トレーニング・英文読解・歴史一問一答（基礎/v2）・小論文から1つ選んで、少しずつ進めましょう。
-      </p>
-    </section>
+    <footer class="member-footer">© 個別指導Up塾 / 合同会社アップ</footer>
   </main>
 
   <script type="module">
