@@ -3,48 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>アプトレ</title>
+  <meta name="description" content="個別指導Up塾の学習トレーニングサイト『アプトレ』。知識の暗記だけでなく、考えて解く力を育てます。" />
+  <title>アプトレ | 個別指導Up塾</title>
   <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/home.css" />
 </head>
-<body class="landing-v3">
-  <main class="landing-shell">
-    <section class="landing-hero" aria-labelledby="landing-title">
-      <h1 id="landing-title" class="visually-hidden">アプトレ</h1>
+<body class="home-page">
+  <main class="home-shell">
+    <section class="home-hero" aria-labelledby="home-title">
+      <div class="home-copy-card">
+        <p class="home-eyebrow">個別指導Up塾　生徒専用</p>
+        <h1 id="home-title" class="home-title">
+          <span>AIと鍛える</span>
+          思考力トレーニング
+        </h1>
+        <p class="home-lead">
+          アプトレは、知識を覚えるだけでなく、問題を読み、考え、解き切る力を育てる学習サイトです。
+          毎日少しずつ、スマートフォンでもパソコンでも取り組めます。
+        </p>
 
-      <div class="landing-hero-media">
-        <img
-          class="landing-hero-image"
-          src="hero-mobile.png"
-          alt="アプトレの主役キャラクター・リーディー"
-        />
-        <div class="landing-hero-overlay"></div>
+        <div class="home-points" aria-label="アプトレの特長">
+          <span class="home-point">短時間で続けやすい</span>
+          <span class="home-point">思考力を鍛える</span>
+          <span class="home-point">スマホ・PC対応</span>
+        </div>
+
+        <div class="home-actions">
+          <a class="landing-cta landing-cta-primary" href="login.html">ログイン</a>
+          <a class="landing-cta landing-cta-secondary" href="pricing.html">料金を見る</a>
+        </div>
+        <p class="home-note">
+          会員IDと初期パスワードは教室からお知らせします。
+        </p>
       </div>
 
-      <div class="landing-cta-card">
-        <a class="landing-cta landing-cta-primary" href="login.html">ログイン</a>
-        <a class="landing-cta landing-cta-secondary" href="pricing.html">料金を見る</a>
+      <div class="home-visual" aria-label="アプトレのメインビジュアル">
+        <div class="home-visual-card">
+          <img
+            class="home-visual-image"
+            src="hero-mobile.png"
+            alt="アプトレの主役キャラクター・リーディー"
+          />
+        </div>
       </div>
     </section>
 
-    <section class="about-card" aria-labelledby="about-title">
-      <div class="about-icon" aria-hidden="true">
-        <svg viewBox="0 0 64 64" class="about-icon-svg">
-          <circle cx="32" cy="32" r="30"></circle>
-          <path d="M25 21c-5 0-9 4-9 9 0 3 1 5 3 7-1 1-2 3-2 5h9v-4h-4c0-2 2-4 5-4h2v-6h-2c-2 0-4-2-4-4s2-4 4-4c3 0 5 2 5 5v18h6V25c0-8-5-14-13-14zm15 4v4h4c2 0 4 2 4 4s-2 4-4 4h-2v6h2c3 0 5 2 5 4h-4v4h9c0-2-1-4-2-5 2-2 3-4 3-7 0-5-4-9-9-9h-6z"></path>
-        </svg>
-      </div>
+    <div class="home-sections">
+      <section class="home-features" aria-label="アプトレで身につく力">
+        <article class="home-feature">
+          <div class="home-feature-number" aria-hidden="true">1</div>
+          <h2>知識を使う力</h2>
+          <p>覚えた知識を、問題の条件に合わせて組み立てる練習を重ねます。</p>
+        </article>
 
-      <div class="about-body">
-        <h2 id="about-title">アプトレとは</h2>
-        <p>
-          アプトレは、知識の暗記だけでなく、「解く力」を育てる、
-          学習トレーニングサイトです。
-        </p>
-        <p>
-          毎日少しずつ進めやすい設計で、スマホでもPCでも快適に学習に取り組めます。
-        </p>
-      </div>
-    </section>
+        <article class="home-feature">
+          <div class="home-feature-number" aria-hidden="true">2</div>
+          <h2>考え続ける力</h2>
+          <p>すぐに答えを見るのではなく、自分の頭で試行錯誤する習慣を育てます。</p>
+        </article>
+
+        <article class="home-feature">
+          <div class="home-feature-number" aria-hidden="true">3</div>
+          <h2>毎日続ける力</h2>
+          <p>短いトレーニングを積み重ね、学習を日常の習慣に変えていきます。</p>
+        </article>
+      </section>
+
+      <section class="home-guide" aria-labelledby="guide-title">
+        <div>
+          <h2 id="guide-title">学習の始め方</h2>
+          <p>教室から案内された会員情報でログインし、今日の学習メニューを選びます。</p>
+        </div>
+        <ol class="home-steps">
+          <li>会員IDとパスワードを入力</li>
+          <li>学習メニューを1つ選択</li>
+          <li>短時間でも毎日継続</li>
+        </ol>
+      </section>
+    </div>
+
+    <footer class="home-footer">
+      © 個別指導Up塾 / 合同会社アップ
+    </footer>
   </main>
 </body>
 </html>
