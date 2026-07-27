@@ -3,25 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="個別指導Up塾の学習トレーニングサイト『アプトレ』会員ログインページです。" />
   <title>ログイン | アプトレ</title>
   <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/member.css" />
 </head>
-<body class="login-page">
-  <main class="landing-wrap login-wrap">
-    <section class="hero login-hero">
-      <div class="login-hero-inner">
-        <p class="hero-kicker login-kicker">Up塾トレーニング</p>
-        <h1 class="hero-title login-title">ログイン</h1>
-        <p class="hero-copy login-copy">
-          塾生用ページです。<br />
-          会員IDとパスワードを入力してください。
-        </p>
-      </div>
+<body class="member-page member-login-page">
+  <main class="member-shell">
+    <a class="member-top-link" href="./" aria-label="アプトレのトップページへ戻る">← アプトレトップへ</a>
 
-      <section class="panel login-panel" aria-label="ログインフォーム">
+    <div class="member-login-grid">
+      <section class="member-brand-panel" aria-labelledby="member-login-title">
+        <div class="member-brand-copy">
+          <p class="member-eyebrow">個別指導Up塾　生徒専用</p>
+          <h1 id="member-login-title" class="member-brand-title">
+            <span>AIと鍛える思考力トレーニング</span>
+            ログイン
+          </h1>
+          <p class="member-brand-lead">
+            会員IDとパスワードを入力して、今日の学習を始めましょう。
+            短時間でも、毎日の積み重ねが大きな力になります。
+          </p>
+        </div>
+
+        <div class="member-brand-visual" aria-hidden="true">
+          <div class="member-brand-image-wrap">
+            <img class="member-brand-image" src="hero-mobile.png" alt="" />
+          </div>
+        </div>
+      </section>
+
+      <section class="member-form-card" aria-label="ログインフォーム">
+        <p class="member-form-badge">学習を始める</p>
+        <h2>会員ログイン</h2>
+        <p class="member-form-intro">
+          教室から案内された会員IDとパスワードを入力してください。
+        </p>
+
         <form id="login-form">
           <label class="form-label" for="member-id">会員ID</label>
-          <input class="form-input" id="member-id" name="memberId" required autocomplete="username" />
+          <input
+            class="form-input"
+            id="member-id"
+            name="memberId"
+            placeholder="例：UP000001"
+            required
+            autocomplete="username"
+          />
+
           <label class="form-label" for="password">パスワード</label>
           <input
             class="form-input"
@@ -31,13 +60,20 @@
             autocomplete="current-password"
             required
           />
+
           <button class="btn btn-primary login-submit" type="submit">ログイン</button>
-          <p id="error-message" class="login-error" style="display: none;">
+          <p id="error-message" class="login-error" role="alert" style="display: none;">
             ログインに失敗しました。
           </p>
         </form>
+
+        <p class="member-login-help">
+          会員情報が分からない場合は、個別指導Up塾の教室までお問い合わせください。
+        </p>
       </section>
-    </section>
+    </div>
+
+    <footer class="member-footer">© 個別指導Up塾 / 合同会社アップ</footer>
   </main>
 
   <script type="module">
