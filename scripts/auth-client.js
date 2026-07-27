@@ -18,12 +18,15 @@ async function readJson(response) {
 }
 
 export async function login(memberId, password, fetchImpl = fetch) {
-  const response = await fetchImpl("/api/auth/member/login", {
+ const response = await fetchImpl(
+  "https://english-words-game-pr102.onrender.com/api/auth/member/login",
+  {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ memberId, password }),
-  });
+  }
+);
   const payload = await readJson(response);
   if (!response.ok || !isActiveSession(payload)) {
     throw new Error("ログインに失敗しました。会員IDとパスワードを確認してください。");
