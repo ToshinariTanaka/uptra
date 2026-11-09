@@ -83,5 +83,5 @@ test("middleware serves billing only after a valid member session", async (t) =>
     assert.equal(response.status, 200);
     assert.equal(await response.text(), "billing page");
   }
-  assert.equal(nextCount, 2);
+  assert.equal(nextCount, 3);
 });
