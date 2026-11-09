@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>契約・お支払い | アプトレ</title>
+<link rel="stylesheet" href="styles/main.css"><link rel="stylesheet" href="styles/member.css">
+<style>
+.billing-header-links{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.billing-header-link{padding:12px 14px;border:1px solid #ffffff35;border-radius:999px;background:#06152f6e;color:white;text-decoration:none;font-weight:700;font-size:.85rem}
+.billing-warning{margin:20px 0;padding:16px 20px;border:1px solid #efdb9e;border-radius:16px;background:#fff8e8;color:#573d0c}
+.billing-warning p{line-height:1.7;margin:6px 0 0}
+.billing-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.billing-panel{background:#fff;border:1px solid #dce5f1;border-radius:22px;padding:26px;box-shadow:0 12px 30px #06152f14}
+.billing-panel h2{margin:0 0 18px;color:#102b55;font-size:1.35rem}
+.billing-kv{margin:0}.billing-kv>div{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:13px 0;border-bottom:1px solid #eaf0f8}
+.billing-kv dt{color:#536d91;font-size:.87rem}.billing-kv dd{font-weight:800;margin:0;color:#10284d}
+.billing-muted{font-size:.85rem;color:#536d91;line-height:1.8}
+.billing-disabled{margin-top:16px;padding:13px 20px;border-radius:10px;border:0;color:#526b8a;background:#e8eef6;font-weight:800;cursor:not-allowed}
+.billing-demo{margin-top:16px}
+.billing-demo select{width:min(100%,340px);padding:10px;border-radius:8px;border:1px solid #c7d4e5;font:inherit;background:white}
+.billing-demo label{display:block;margin:15px 0 7px;color:#10284d;font-weight:800}
+.billing-sample{padding:15px;background:#f3f7fd;border-radius:12px;margin:16px 0;color:#10284d}
+@media(max-width:750px){.billing-grid{grid-template-columns:1fr}.billing-panel{padding:20px}}
+</style></head>
+<body class="member-page member-dashboard-page">
+<main class="member-shell" id="billing-root" hidden>
+<header class="dashboard-header">
+<a class="dashboard-brand" href="dashboard.html"><span class="dashboard-brand-mark" aria-hidden="true">Up</span><span>アプトレ</span></a>
+<nav class="billing-header-links" aria-label="会員メニュー"><a class="billing-header-link" href="dashboard.html">学習メニューへ戻る</a><button id="billing-logout" class="dashboard-logout" type="button">ログアウト</button></nav>
+</header>
+<section class="dashboard-intro"><p class="member-eyebrow">UP JUKU / MEMBER SERVICES</p><h1>契約・お支払い</h1><p>今後、契約状況や支払方法をここから確認できるようにします。</p></section>
+<div class="billing-warning" role="note"><strong>開発用プレビュー／実課金なし</strong><p>決済会社・会員契約DBには接続していません。画面上の選択操作で実際の契約・利用権限は変わりません。</p></div>
+<div class="billing-grid">
+<section class="billing-panel"><h2>会員情報</h2><dl class="billing-kv"><div><dt>ログイン会員ID</dt><dd id="billing-member-id">確認中</dd></div><div><dt>実契約情報</dt><dd>未接続</dd></div></dl><p class="billing-muted">会員IDは既存のセッションAPIから取得します。メールアドレスのみでのアカウント統合は行いません。</p></section>
+<section class="billing-panel"><h2>英文読解トレーニング</h2><dl class="billing-kv">
+<div><dt>販売対象</dt><dd>一般会員・Up塾生</dd></div>
+<div><dt>月額・年額料金</dt><dd>未確定（税込表示予定）</dd></div>
+<div><dt>無料体験</dt><dd>期間・カード登録とも未決定</dd></div>
+<div><dt>販売用学習アプリ</dt><dd>未作成</dd></div>
+</dl><button class="billing-disabled" type="button" disabled>申込み（準備中）</button><p class="billing-muted">学習者による有料AI API利用は初期版では禁止します。</p></section>
+</div>
+<section class="billing-panel billing-demo"><h2>契約状態の表示テスト（架空データ）</h2><p class="billing-muted">表示の確認専用です。カード入力・決済・解約・返金・学習権限付与はできません。</p>
+<label for="billing-sample-status">サンプルの契約状態</label>
+<select id="billing-sample-status">
+<option value="none">未契約</option><option value="trial">無料体験中（条件未定）</option><option value="active">有料契約中（架空）</option><option value="past_due">決済失敗（架空）</option><option value="cancel_pending">解約予約（架空）</option><option value="ended">契約終了（架空）</option><option value="refunded">返金済み（架空）</option>
+</select>
+<div class="billing-sample" aria-live="polite">サンプル状態：<strong id="billing-sample-label">未契約</strong><p>本番の学習権限：<strong>未接続・付与なし</strong></p></div>
+</section>
+<footer class="member-footer">© 個別指導Up塾 / 合同会社アップ</footer></main>
+<script type="module">
+import { getMemberSession, logout } from "./scripts/auth-client.js";
+let session;
+try {session=await getMemberSession();} catch {window.location.replace("login.html");}
+if(session){
+const id=session.account?.memberId;
+document.getElementById("billing-member-id").textContent=typeof id==="string"&&id?id:"取得できません";
+document.getElementById("billing-root").hidden=false;
+document.getElementById("billing-logout").addEventListener("click",async()=>{
+try{await logout(session.csrfToken);window.location.replace("login.html");}catch(error){window.alert(error.message);}
+});
+}
+const labels=Object.freeze({none:"未契約",trial:"無料体験中（条件未定）",active:"有料契約中（架空）",past_due:"決済失敗（架空）",cancel_pending:"解約予約（架空）",ended:"契約終了（架空）",refunded:"返金済み（架空）"});
+document.getElementById("billing-sample-status").addEventListener("change",e=>{
+document.getElementById("billing-sample-label").textContent=labels[e.target.value]??labels.none;
+});
+</script></body></html>
