@@ -1,6 +1,6 @@
 import { onRequest as proxyAuthenticationRequest } from "./api/[[path]].js";
 
-const PROTECTED_PATHS = new Set(["/dashboard", "/dashboard.html"]);
+const PROTECTED_PATHS = new Set(["/dashboard", "/dashboard.html", "/billing", "/billing.html", "/billing/"]);
 
 function loginRedirect(request) {
   return new Response(null, {
