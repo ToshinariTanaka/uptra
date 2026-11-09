@@ -27,7 +27,7 @@ test("middleware protects dashboard server-side and fails closed", async (t) => 
   };
   t.mock.method(globalThis, "fetch", async () => new Response(null, { status: 401 }));
 
-  for (const path of ["/dashboard", "/dashboard.html", "/billing", "/billing.html"]) {
+  for (const path of ["/dashboard", "/dashboard.html", "/billing", "/billing.html", "/billing/"]) {
     const response = await middleware(path, next);
     assert.equal(response.status, 302);
     assert.equal(response.headers.get("Location"), "https://uptra.example/login.html");
@@ -75,7 +75,7 @@ test("middleware leaves public pages and API routes unchanged", async () => {
 test("middleware serves billing only after a valid member session", async (t) => {
   t.mock.method(globalThis, "fetch", async () => Response.json(activeSession));
   let nextCount = 0;
-  for (const path of ["/billing", "/billing.html"]) {
+  for (const path of ["/billing", "/billing.html", "/billing/"]) {
     const response = await middleware(path, () => {
       nextCount += 1;
       return new Response("billing page");
