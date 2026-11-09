@@ -71,3 +71,17 @@ test("middleware leaves public pages and API routes unchanged", async () => {
   }
   assert.equal(nextCalls, 3);
 });
+
+test("middleware serves billing only after a valid member session", async (t) => {
+  t.mock.method(globalThis, "fetch", async () => Response.json(activeSession));
+  let nextCount = 0;
+  for (const path of ["/billing", "/billing.html"]) {
+    const response = await middleware(path, () => {
+      nextCount += 1;
+      return new Response("billing page");
+    });
+    assert.equal(response.status, 200);
+    assert.equal(await response.text(), "billing page");
+  }
+  assert.equal(nextCount, 2);
+});
