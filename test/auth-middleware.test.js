@@ -27,7 +27,7 @@ test("middleware protects dashboard server-side and fails closed", async (t) => 
   };
   t.mock.method(globalThis, "fetch", async () => new Response(null, { status: 401 }));
 
-  for (const path of ["/dashboard", "/dashboard.html"]) {
+  for (const path of ["/dashboard", "/dashboard.html", "/billing", "/billing.html"]) {
     const response = await middleware(path, next);
     assert.equal(response.status, 302);
     assert.equal(response.headers.get("Location"), "https://uptra.example/login.html");
